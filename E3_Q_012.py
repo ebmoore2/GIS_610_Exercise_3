@@ -5,18 +5,24 @@
 #Finally, write the results to a CSV file.
 print("Let's get only the crimes that are home burglaries in a csv file...")
 
+
+#step 1
+#import
+#
 import os, sys, arcpy, datetime, calendar, csv, pprint
 from arcpy import env
 env.overwriteOutput = True
-pp = pprint.PrettyPrinter(indent=4)
+#pp = pprint.PrettyPrinter(indent=4)
 
+
+#step 2
 #set local variables
 #
 workspace_path = r"C:\Users\Buffie\Documents\1 GIS\610\Exercise_3_ArcPy_test\Police.gdb"
 env.workspace = workspace_path
 Gen_Off = "General_Offense"
 in_layer = workspace_path + "\\" + Gen_Off
-selection_type = "NEW_SELECTION"
+
 
 """
 #Old DateTime Stuff
@@ -58,67 +64,63 @@ monthrange(2014, 2)
 (5, 28)
 a = monthrange(2014, 2)
 range(1, a[1]+1)
+#
+#Old DateTime Stuff
 """
 
 
+#step 3
 #SQL where clause
 #
-#use triple quote containers
-#EXAMPLE1
-#arcpy.SelectLayerByAttribute_management("states", "NEW_SELECTION", 
-#                                        "[NAME] = 'California'")
-#
-#EXAMPLE2
-#where = """ "StudyID" = '%s' """ % name
-#
-#EXAMPLE3, ...<> means not equal
-#QF5 = "Week"
-#QF6 = "Wk"
-#WC4 = """ '{}' <> '{}' AND '{}' <> '' """.format(QF5,QF6,QF6)
-
-#SQL where clause
-#
+                #use triple quote containers
+                #EXAMPLE1
+                #arcpy.SelectLayerByAttribute_management("states", "NEW_SELECTION", 
+                #                                        "[NAME] = 'California'")
+                #
+                #EXAMPLE2
+                #where = """ "StudyID" = '%s' """ % name
+                #
+                #EXAMPLE3, ...<> means not equal
+                #QF5 = "Week"
+                #QF6 = "Wk"
+                #WC4 = """ '{}' <> '{}' AND '{}' <> '' """.format(QF5,QF6,QF6)
+                #
+                #SQL where clause
+                #
 V1 = 'locationTranslation'
 V2 = 'Residence/Home'
 V3 = 'OffenseCustom'
 V4 = 'BURGLARY FORCE'
 where = """ '{}' = '{}' AND '{}' = '{}' """.format(V1,V2,V3,V4)
 
+
+#step 4
 #select by attribute
 #.......when printing Selection to check the results, it prints "General_Offense_Layer2", I don't know what this is doing.
 #
 #SelectLayerByAttribute_management (in_layer_or_view, {selection_type}, {where_clause}, {invert_where_clause})
-#Selection = arcpy.SelectLayerByAttribute_management(in_layer, selection_type, where)
-#for row in Selection:
-#    print(row)
-#print("Selected layer by attributes.")
+arcpy.SelectLayerByAttribute_management(in_layer, "NEW_SELECTION", where)
+#this should update in_layer to be selecting, so when you export it only takes the selected records.
+print("Selected layer by attributes.")
 
 
-#write selection to csv
-#.......For some reason, using the where clause here, this result is just an empty csv with only field headers and nothing else.
+#step 5
+#with open 'w' method & SearchCursor
 #
-print("Exporting selection to csv...")
-#table to table conversion
-#arcpy.TableToTable_conversion(in_rows, out_path, out_name, {where_clause}, {field_mapping}, {config_keyword})
-in_rows = in_layer
-out_path = r"C:\Users\Buffie\Documents\1 GIS\610\Exercise_3_ArcPy_test"
-out_name = "HomeBurg_PoliceCalls.csv"
-arcpy.TableToTable_conversion(in_rows, out_path, out_name, where)
-print("Done printing to csv file.")
-
-
-#with open 'w' method
+print("Writing to csv file...")
+fields = ['OBJECTID', 'shape', 'occ_dt', 'obfAddress', 'x_rand', 'y_rand', 'disclaimer', 'place_name', 'OffenseCustom', 'locationTranslation'] 
+outCsv = r"C:\Users\Buffie\Documents\1 GIS\610\Exercise_3_ArcPy_test\HomeBurg_Calls.csv"
 #
-#{ERROR, so did a different way, also don't understand, "item.id" does not have an attribute "id"... same with "OBJECTID"...}
-#create an array of fields that we want to use as column headers
-#fix...OBJECTID,occ_dt,place_name,Offense_Custom,locationTranslation = [],[],[],[],[]
-#fix...writer.writerow([OBJECTID, occ_dt, place_name, Offense_Custom, locationTranslation])
-#modified from class 12 notes
-#fields = ['OBJECTID', 'shape', 'occ_dt', 'obfAddress', 'x_rand', 'y_rand', 'disclaimer', 'place_name', 'OffenseCustom', 'locationTranslation']
-#with open(r"C:\Users\Buffie\Documents\1 GIS\610\Exercise_3_ArcPy_test\Police_Calls_90_days.csv", 'w', encoding="utf-8", newline='') as outfile:
-#    csvfile = csv.writer(outfile)
-#    csvfile.writerow(fields)
-#    for item in Selection:
-#        row = [item.OBJECTID, item.shape, item.occ_dt, item.obfAddress, item. x_rand, item.y_rand, item.disclaimer, item.place_name, item.OffenseCustom, item.locationTranslation]
-#        csvfile.writerow(row)
-#        pp.pprint(row)
+#
+#
+#arcpy.SearchCursor(in_table, field_names, {where_clause}, {spatial_reference}, {explode_to_points}, {sql_clause})
+# *********************when including the "where" as in where_clause, the csv is just EMPTY**************************
+#................without "where" it just exports the entire csv without selecting out "Home/Res" and "BURGLARY FORCE"............
+with open(outCsv, 'w', encoding="utf-8", newline='') as new_csv:  
+    writer = csv.writer(new_csv)  
+    writer.writerow(fields)  # writes header containing list of fields  
+    rows = arcpy.da.SearchCursor(in_layer, fields)
+    for row in rows:  
+        writer.writerow(row)  # writes fc contents to output csv  
+    del rows
+print("Done writing to csv file.")
