@@ -8,5 +8,3 @@ I attempted Extra Credit questions 12-13.
 Each .py is for one question at a time.
 
 This contains a word document answering question 1-4 & 11.
-
-All questions except Q12 were successful for me.
