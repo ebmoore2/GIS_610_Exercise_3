@@ -44,6 +44,7 @@ out_name2 = "US_Counties_2018"
 #
 #(for step 6)
 in_layer = workspace_path + "\\" + fgdb_name + "\\" + out_name2
+#SQL where clause
 Key1 = "NAME"
 Key2 = "Maricopa"
 where_clause = """ '{}' = '{}' """.format(Key1,Key2)
@@ -88,9 +89,11 @@ print("Done selecting Maricopa County.")
 
 #step 7
 #export selection
+### At this point, successfully exported shapefiles, but when trying these next steps, the selection isn't coming through?
+###It copies everything without selecting the Maricopa County.
 #
 print("Export selection...")
-arcpy.FeatureClassToFeatureClass_conversion(in_layer, Output_Geodatabase, out_name3)
+arcpy.FeatureClassToFeatureClass_conversion(in_layer, Output_Geodatabase, out_name3, where_clause)
 print("Done exporting Maricopa selection.")
 
 
