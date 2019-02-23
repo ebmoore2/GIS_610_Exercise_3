@@ -6,7 +6,7 @@ Each .py is for one question at a time.
 This contains a word document answering question 1-4 & 11.
 
 
-#**Extra Credit Notes**
+# ********Extra Credit Notes********
 For questions 12 & 13, I attemped them, but had trouble making the selection stick when exporting.
 
 Q12, I caused it to create an empty csv file with just the field headers.
